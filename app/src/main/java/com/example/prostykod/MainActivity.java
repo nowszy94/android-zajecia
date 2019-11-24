@@ -41,13 +41,16 @@ public class MainActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                authenticationService.authenticate(usernameField.getText().toString(), passwordField.getText().toString());
+                String password = passwordField.getText().toString();
+                authenticationService.authenticate(usernameField.getText().toString(), password);
                 errorOnLogin = !authenticationService.getIsAuthenticated();
 
                 errorMessageField.setVisibility(errorOnLogin ? View.VISIBLE : View.INVISIBLE);
 
                 if (authenticationService.getIsAuthenticated()) {
-                    startActivity(new Intent(MainActivity.this, NotepadActivity.class));
+                    Intent intent = new Intent(MainActivity.this, NotepadActivity.class);
+                    intent.putExtra("password", password);
+                    startActivity(intent);
                 }
             }
         });

@@ -11,17 +11,17 @@ public class NotepadService {
         return notepadService;
     }
 
-    private String content;
+    private byte[] data;
 
     private NotepadService() {
-        this.content = "Empty";
+        this.data = new byte[0];
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public byte[] getData() {
+        return data;
     }
 
-    public String getContent() {
-        return content;
+    public void setData(byte[] data) {
+        this.data = data;
     }
 }

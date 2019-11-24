@@ -12,6 +12,7 @@ public class NotepadActivity extends AppCompatActivity {
 
     private AuthenticationService authenticationService = AuthenticationService.getInstance();
     private NotepadService notepadService = NotepadService.getInstance();
+    private EncryptDecryptService encryptDecryptService = EncryptDecryptService.getInstance();
     private EditText notepadField;
     private EditText changePasswordField;
     private Button saveNotepadButton;
@@ -32,12 +33,13 @@ public class NotepadActivity extends AppCompatActivity {
         this.changePasswordButton = findViewById(R.id.changePasswordButton);
         this.logoutButton = findViewById(R.id.logoutButton);
 
-        this.notepadField.setText(notepadService.getContent());
+        final String password = getIntent().getStringExtra("password");
+        this.notepadField.setText(encryptDecryptService.decrypt(notepadService.getData(), password));
 
         this.saveNotepadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notepadService.setContent(notepadField.getText().toString());
+                notepadService.setData(encryptDecryptService.encrypt(notepadField.getText().toString(), password));
             }
         });
 
@@ -45,6 +47,8 @@ public class NotepadActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 authenticationService.changePassword(changePasswordField.getText().toString());
+                authenticationService.logout();
+                startActivity(new Intent(NotepadActivity.this, MainActivity.class));
             }
         });
 
