@@ -1,8 +1,6 @@
 package com.example.prostykod;
-import java.security.Key;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -20,10 +18,12 @@ class EncryptDecryptService {
         return encryptDecryptService;
     }
 
-    private PasswordManager passwordManager;
-
-    public EncryptDecryptService() {
-        this.passwordManager = new PasswordManager();
+    private SecretKeySpec hashKey(String password) throws Exception {
+        byte[] keyBytes = new byte[16];
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        digest.update(password.getBytes());
+        System.arraycopy(digest.digest(), 0, keyBytes, 0, keyBytes.length);
+        return new SecretKeySpec(keyBytes, "AES");
     }
 
     public byte[] encrypt(String message, String password) {
@@ -37,11 +37,7 @@ class EncryptDecryptService {
             IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
             // Hashing key.
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update(password.getBytes("UTF-8"));
-            byte[] keyBytes = new byte[16];
-            System.arraycopy(digest.digest(), 0, keyBytes, 0, keyBytes.length);
-            SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
+            SecretKeySpec secretKeySpec = hashKey(password);
 
             // Encrypt.
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -62,26 +58,19 @@ class EncryptDecryptService {
     }
 
     public String decrypt(byte[] data, String password) {
-        int ivSize = 16;
-        int keySize = 16;
 
         try {
-            // Extract IV.
+            int ivSize = 16;
             byte[] iv = new byte[ivSize];
             System.arraycopy(data, 0, iv, 0, iv.length);
             IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
-            // Extract encrypted part.
             int encryptedSize = data.length - ivSize;
             byte[] encryptedBytes = new byte[encryptedSize];
             System.arraycopy(data, ivSize, encryptedBytes, 0, encryptedSize);
 
             // Hash key.
-            byte[] keyBytes = new byte[keySize];
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(password.getBytes());
-            System.arraycopy(md.digest(), 0, keyBytes, 0, keyBytes.length);
-            SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
+            SecretKeySpec secretKeySpec = hashKey(password);
 
             // Decrypt.
             Cipher cipherDecrypt = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -93,17 +82,5 @@ class EncryptDecryptService {
             e.printStackTrace();
         }
         return null;
-    }
-
-    static class PasswordManager {
-        public String preparePassword(String password) {
-            if (password.length() == 16) {
-                return password;
-            }
-            if (password.length() > 16) {
-                return password.substring(0, 16);
-            }
-            return password + "1111111111111111".substring(password.length());
-        }
     }
 }
