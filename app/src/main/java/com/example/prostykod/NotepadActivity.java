@@ -46,7 +46,9 @@ public class NotepadActivity extends AppCompatActivity {
         this.changePasswordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                authenticationService.changePassword(changePasswordField.getText().toString());
+                String newPassword = changePasswordField.getText().toString();
+                authenticationService.changePassword(newPassword);
+                notepadService.setData(encryptDecryptService.encrypt(notepadField.getText().toString(), newPassword));
                 authenticationService.logout();
                 startActivity(new Intent(NotepadActivity.this, MainActivity.class));
             }
