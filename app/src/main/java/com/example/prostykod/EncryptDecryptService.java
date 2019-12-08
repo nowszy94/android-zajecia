@@ -29,22 +29,21 @@ class EncryptDecryptService {
     public byte[] encrypt(String message, String password) {
 
         try {
-            // Generating IV.
+            // Wektor inicjalizacyjny.
             int ivSize = 16;
             byte[] iv = new byte[ivSize];
-            SecureRandom random = new SecureRandom();
-            random.nextBytes(iv);
+            new SecureRandom().nextBytes(iv);
             IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
-            // Hashing key.
+            // Hashowanie klucza
             SecretKeySpec secretKeySpec = hashKey(password);
 
-            // Encrypt.
+            // Szyfrowanie
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
             byte[] encrypted = cipher.doFinal(message.getBytes());
 
-            // Combine IV and encrypted part.
+            // Scalenie wektora inicjalizacyjnego z zaszyfrowana wiadomoscia
             byte[] encryptedIVAndText = new byte[ivSize + encrypted.length];
             System.arraycopy(iv, 0, encryptedIVAndText, 0, ivSize);
             System.arraycopy(encrypted, 0, encryptedIVAndText, ivSize, encrypted.length);
@@ -60,6 +59,7 @@ class EncryptDecryptService {
     public String decrypt(byte[] data, String password) {
 
         try {
+            // Wyciągnięcie wektora inicjalizacyjny.
             int ivSize = 16;
             byte[] iv = new byte[ivSize];
             System.arraycopy(data, 0, iv, 0, iv.length);
